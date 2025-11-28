@@ -1,0 +1,13 @@
+[project]
+name = "test-chain"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "langchain>=1.0.8",
+    "langchain-anthropic>=1.2.0",
+    "langchain-google-vertexai>=3.0.3",
+    "langchain-openai>=1.1.0",
+    "pydantic>=2.12.4",
+]

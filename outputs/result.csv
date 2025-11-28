@@ -1,0 +1,65 @@
+テーマ,サイド1,サイド2,勝者
+"人間の本質は『善』か『悪（利己的）』か
+サイド1 → 善
+サイド2 → 悪",claude-sonnet-4-5,gemini-3-pro-preview,claude-sonnet-4-5
+,gpt-5.1,gemini-3-pro-preview,gpt-5.1
+,gemini-3-pro-preview,claude-sonnet-4-5,gemini-3-pro-preview
+,gpt-5.1,claude-sonnet-4-5,gpt-5.1
+,gemini-3-pro-preview,gpt-5.1,gpt-5.1
+,claude-sonnet-4-5,gpt-5.1,gpt-5.1
+"人間の本質は『善』か『悪（利己的）』か
+サイド1 → 悪
+サイド2 → 善",gemini-3-pro-preview,gpt-5.1,gpt-5.1
+,claude-sonnet-4-5,gemini-3-pro-preview,gemini-3-pro-preview
+,claude-sonnet-4-5,gpt-5.1,claude-sonnet-4-5
+,gemini-3-pro-preview,claude-sonnet-4-5,claude-sonnet-4-5
+,gpt-5.1,gemini-3-pro-preview,gpt-5.1
+,gpt-5.1,claude-sonnet-4-5,claude-sonnet-4-5
+"数学は「発見」されたのか、「発明」されたのか
+サイド1 → 発見
+サイド2 → 発明",gemini-3-pro-preview,claude-sonnet-4-5,claude-sonnet-4-5
+,claude-sonnet-4-5,gemini-3-pro-preview,gemini-3-pro-preview
+,gemini-3-pro-preview,gpt-5.1,gpt-5.1
+,claude-sonnet-4-5,gpt-5.1,gpt-5.1
+,gpt-5.1,gemini-3-pro-preview,gemini-3-pro-preview
+,gpt-5.1,claude-sonnet-4-5,gpt-5.1
+"数学は「発見」されたのか、「発明」されたのか
+サイド1 → 発明
+サイド2 → 発見",claude-sonnet-4-5,gemini-3-pro-preview,gemini-3-pro-preview
+,gemini-3-pro-preview,gpt-5.1,gemini-3-pro-preview
+,gpt-5.1,gemini-3-pro-preview,gpt-5.1
+,claude-sonnet-4-5,gpt-5.1,claude-sonnet-4-5
+,gemini-3-pro-preview,claude-sonnet-4-5,gemini-3-pro-preview
+,gpt-5.1,claude-sonnet-4-5,gpt-5.1
+"「テセウスの船」（部品が全て入れ替わった船は元の船と同じか？）
+サイド1 → 同一
+サイド2 → 異なる",claude-sonnet-4-5,gemini-3-pro-preview,gemini-3-pro-preview
+,gemini-3-pro-preview,gpt-5.1,gpt-5.1
+,claude-sonnet-4-5,gpt-5.1,claude-sonnet-4-5
+,gemini-3-pro-preview,claude-sonnet-4-5,gemini-3-pro-preview
+,gpt-5.1,claude-sonnet-4-5,gpt-5.1
+,gpt-5.1,gemini-3-pro-preview,gemini-3-pro-preview
+"「テセウスの船」（部品が全て入れ替わった船は元の船と同じか？）
+サイド1 → 異なる
+サイド2 → 同一",gemini-3-pro-preview,gpt-5.1,gpt-5.1
+,claude-sonnet-4-5,gpt-5.1,gpt-5.1
+,claude-sonnet-4-5,gemini-3-pro-preview,claude-sonnet-4-5
+,gpt-5.1,gemini-3-pro-preview,gpt-5.1
+,gpt-5.1,claude-sonnet-4-5,claude-sonnet-4-5
+,gemini-3-pro-preview,claude-sonnet-4-5,gemini-3-pro-preview
+"辛い現実か、心地よい仮想現実か、どちらを選ぶべきか？
+サイド1 → 真実
+サイド2 → 幸福",claude-sonnet-4-5,gpt-5.1,gpt-5.1
+,gemini-3-pro-preview,gpt-5.1,gpt-5.1
+,gpt-5.1,gemini-3-pro-preview,gemini-3-pro-preview
+,claude-sonnet-4-5,gemini-3-pro-preview,claude-sonnet-4-5
+,gemini-3-pro-preview,claude-sonnet-4-5,gemini-3-pro-preview
+,gpt-5.1,claude-sonnet-4-5,gpt-5.1
+"辛い現実か、心地よい仮想現実か、どちらを選ぶべきか？
+サイド1 → 幸福
+サイド2 → 真実",claude-sonnet-4-5,gpt-5.1,gpt-5.1
+,gemini-3-pro-preview,gpt-5.1,gpt-5.1
+,gpt-5.1,gemini-3-pro-preview,gpt-5.1
+,claude-sonnet-4-5,gemini-3-pro-preview,gemini-3-pro-preview
+,gemini-3-pro-preview,claude-sonnet-4-5,gemini-3-pro-preview
+,gpt-5.1,claude-sonnet-4-5,gpt-5.1
