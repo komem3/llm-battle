@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from langchain.agents import create_agent
 from langchain.agents.structured_output import ToolStrategy
+from langchain.agents.middleware import ModelRetryMiddleware
 from langchain_google_vertexai import ChatVertexAI
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 from langgraph.typing import InputT
@@ -8,6 +9,7 @@ from getpass import getpass
 from langchain_anthropic import ChatAnthropic
 import os
 import asyncio
+import csv
 
 if "ANTHROPIC_API_KEY" not in os.environ:
     os.environ["ANTHROPIC_API_KEY"] = getpass()
@@ -16,12 +18,12 @@ if "OPENAI_API_KEY" not in os.environ:
     os.environ["OPENAI_API_KEY"] = getpass()
 
 themes = (
-    # ("人間の本質は『善』か『悪（利己的）』か", ("善", "悪")),
-    # ("数学は「発見」されたのか、「発明」されたのか", ("発見", "発明")),
-    # (
-    #     "「テセウスの船」（部品が全て入れ替わった船は元の船と同じか？）",
-    #     ("同じ", "異なる"),
-    # ),
+    ("人間の本質は『善』か『悪（利己的）』か", ("善", "悪")),
+    ("数学は「発見」されたのか、「発明」されたのか", ("発見", "発明")),
+    (
+        "「テセウスの船」（部品が全て入れ替わった船は元の船と同じか？）",
+        ("同じ", "異なる"),
+    ),
     ("辛い現実か、心地よい仮想現実か、どちらを選ぶべきか？", ("真実", "幸福")),
 )
 
@@ -45,6 +47,15 @@ class Agent:
                     location="global",
                 ),
                 response_format=response_format,
+                middleware=[
+                    ModelRetryMiddleware(
+                        max_retries=5,
+                        backoff_factor=2.0,
+                        initial_delay=1.0,
+                        retry_on=self.should_retry,
+                        on_failure=self.format_error,
+                    ),
+                ],
             )
         if "claude" in model_name:
             self.agent = create_agent(
@@ -52,13 +63,49 @@ class Agent:
                     model=model_name,
                 ),
                 response_format=response_format,
+                middleware=[
+                    ModelRetryMiddleware(
+                        max_retries=5,
+                        backoff_factor=2.0,
+                        initial_delay=1.0,
+                        retry_on=self.should_retry,
+                        on_failure=self.format_error,
+                    ),
+                ],
             )
         if "gpt" in model_name:
             self.agent = create_agent(
                 model=model_name,
                 response_format=response_format,
+                middleware=[
+                    ModelRetryMiddleware(
+                        max_retries=5,
+                        backoff_factor=4.0,
+                        initial_delay=5.0,
+                        retry_on=self.should_retry,
+                        on_failure=self.format_error,
+                    ),
+                ],
             )
         self.model_name = model_name
+        self.error_count = 0
+
+    def format_error(self, error: Exception) -> str:
+        return f"Model call failed: {error}. Please try again later."
+
+    def should_retry(self, error: Exception) -> bool:
+        self.error_count += 1
+        # Only retry on rate limit errors
+        if isinstance(error, TimeoutError):
+            print(f"({self.error_count}) {self.model_name} occur timeout. retry...")
+            return True
+        # Or check for specific HTTP status codes
+        if hasattr(error, "status_code"):
+            print(f"({self.error_count}) {self.model_name} occur api quate. retry...")
+            return error.status_code in (429, 503)
+
+        print(f"{self.model_name} occur no retry error.")
+        return False
 
     def get_name(self):
         return self.model_name
@@ -67,11 +114,16 @@ class Agent:
         return self.get_name()
 
     def invoke(self, input: InputT):
+        self.error_count = 0
         return self.agent.ainvoke(input)
 
 
 async def debate(
-    theme: str, sides: tuple[str, str], players: tuple[Agent, Agent], judger: Agent
+    theme: str,
+    sides: tuple[str, str],
+    players: tuple[Agent, Agent],
+    judger: Agent,
+    csv_writer,
 ):
     print(
         f"write to 'outputs/{theme}_({sides[0]}|{sides[1]})_{players[0]}_{players[1]}.md'"
@@ -128,7 +180,7 @@ async def debate(
             )
             messages.append(
                 HumanMessage(
-                    content=f"---- {player2_model_name}({player2_side}派) ----\n{response['structured_response'].content}"
+                    content=f"---- {players[1]}({sides[1]}派) ----\n{response['structured_response'].content}"
                 )
             )
 
@@ -141,6 +193,17 @@ async def debate(
     print(
         f"{theme}: {players[0]}({sides[0]}) vs {players[1]}({sides[1]}) → winner: {players[result['structured_response'].winner]}"
     )
+    csv_writer.writerow(
+        [
+            theme,
+            sides[0],
+            sides[1],
+            players[0].get_name(),
+            players[1].get_name(),
+            result["structured_response"].winner,
+            judger.get_name(),
+        ]
+    )
     return result["structured_response"].winner
 
 
@@ -150,7 +213,7 @@ async def compare_model():
         response_format=ChatResponse,
     )
     claude = Agent(
-        "claude-sonnet-4-5",
+        "claude-opus-4-5",
         response_format=ChatResponse,
     )
     gpt = Agent(
@@ -161,23 +224,42 @@ async def compare_model():
         "gemini-3-pro-preview",
         response_format=ToolStrategy(JudgeResponse),
     )
-    for theme in themes:
-        tasks = []
-        for pattern in ((gemini, claude), (gemini, gpt), (gpt, claude)):
-            tasks.extend(
-                [
-                    debate(theme[0], theme[1], pattern, judger),
-                    debate(theme[0], tuple(reversed(theme[1])), pattern, judger),
-                    debate(theme[0], theme[1], tuple(reversed(pattern)), judger),
-                    debate(
-                        theme[0],
-                        tuple(reversed(theme[1])),
-                        tuple(reversed(pattern)),
-                        judger,
-                    ),
-                ]
-            )
-        await asyncio.gather(*tasks)
+
+    with open("result.csv", "w", newline="") as csvfile:
+        csv_writer = csv.writer(csvfile)
+        csv_writer.writerow(
+            ["theme", "side1", "side2", "player1", "player2", "winner", "judger"]
+        )
+        for theme in themes:
+            tasks = []
+            for pattern in ((gemini, claude), (gemini, gpt), (gpt, claude)):
+                tasks.extend(
+                    [
+                        debate(theme[0], theme[1], pattern, judger, csv_writer),
+                        debate(
+                            theme[0],
+                            tuple(reversed(theme[1])),
+                            pattern,
+                            judger,
+                            csv_writer,
+                        ),
+                        debate(
+                            theme[0],
+                            theme[1],
+                            tuple(reversed(pattern)),
+                            judger,
+                            csv_writer,
+                        ),
+                        debate(
+                            theme[0],
+                            tuple(reversed(theme[1])),
+                            tuple(reversed(pattern)),
+                            judger,
+                            csv_writer,
+                        ),
+                    ]
+                )
+            await asyncio.gather(*tasks)
 
 
 if __name__ == "__main__":
